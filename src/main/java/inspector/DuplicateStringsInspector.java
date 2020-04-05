@@ -88,6 +88,17 @@ public class DuplicateStringsInspector implements Inspector {
         this.threshold = threshold;
     }
 
+    /**
+     * Sets {@code threshold} field.
+     * @param threshold value to be set
+     * @throws InspectionException in case parameter is negative
+     */
+
+    public void setThreshold(long threshold) throws InspectionException {
+        checkThreshold(threshold);
+        this.threshold = threshold;
+    }
+
     private void checkThreshold(long threshold) throws InspectionException {
         if (threshold < 0) {
             throw new InspectionException("Non-negative number expected as threshold");
