@@ -4,7 +4,6 @@ import org.netbeans.lib.profiler.heap.Heap;
 import org.netbeans.lib.profiler.heap.HeapFactory;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 
 public class Main {
