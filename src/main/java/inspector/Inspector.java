@@ -8,5 +8,5 @@ public interface Inspector {
     /**
      * Inspects a given a heap, then writes an inspection message.
      */
-    void inspect();
+    void inspect() throws InspectionException;
 }

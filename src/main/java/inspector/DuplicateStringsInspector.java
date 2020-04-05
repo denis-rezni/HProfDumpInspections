@@ -1,6 +1,8 @@
 package inspector;
 
-import org.netbeans.lib.profiler.heap.*;
+import org.netbeans.lib.profiler.heap.Heap;
+import org.netbeans.lib.profiler.heap.Instance;
+import org.netbeans.lib.profiler.heap.PrimitiveArrayInstance;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -22,7 +24,7 @@ public class DuplicateStringsInspector implements Inspector {
     /**
      * Represents a class name for class {@link String}.
      */
-    private static final String STRING = "java.lang.string";
+    private static final String STRING = "java.lang.String";
 
     /**
      * Represents line separator, which is used when writing.
@@ -43,13 +45,13 @@ public class DuplicateStringsInspector implements Inspector {
     /**
      * {@link Writer}, to which the inspection message is printed.
      */
-    private Writer out;
+    private final Writer out;
 
     /**
      * Specifies the threshold, from which number of
      * String duplicates becomes significant and is printed to the inspection message.
      */
-    private long threshold = 100;
+    private long threshold = 5;
 
     /**
      * @param heap heap for inspection
@@ -73,33 +75,28 @@ public class DuplicateStringsInspector implements Inspector {
 
     /**
      * @param heap      heap for inspection
-     * @param writer    inspection message is printed there
+     * @param out       inspection message is printed there
      * @param threshold threshold from which a number of duplicates counts as significant
      */
     @SuppressWarnings("unused")
-    public DuplicateStringsInspector(Heap heap, Writer writer, long threshold) {
-        new DuplicateStringsInspector(heap, writer);
+    public DuplicateStringsInspector(Heap heap, Writer out, long threshold) {
+        this.out = out;
+        this.heap = heap;
         this.threshold = threshold;
     }
 
 
-    /**
-     * Searches for duplicate strings in a specified heap, then writes an inspection message.
-     * In case of an exception, prints it with a cause, then prints stackTrace.
-     */
-    public void inspect() {
-        fillFrequencies();
-        try {
+    public void inspect() throws InspectionException {
+        try (out) {
+            fillFrequencies();
             writeInspection();
-        } catch (InspectionException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new InspectionException("IO error when closing writer: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Writes a human-readable inspection message using a specified {@link Writer}.
-     *
+     * Writes a human-readable inspection message using an earlier specified {@link Writer}.
      * @throws InspectionException if writing fails due to a I/O error.
      */
     private void writeInspection() throws InspectionException {
@@ -111,8 +108,9 @@ public class DuplicateStringsInspector implements Inspector {
             for (Map.Entry<String, Long> entry : frequencies.entrySet()) {
                 if (entry.getValue() >= threshold) {
                     hasDuplicates = true;
-                    out.append(entry.getKey())
-                            .append(" : ")
+                    out.append("\"")
+                            .append(entry.getKey())
+                            .append("\" : ")
                             .append(String.valueOf(entry.getValue()))
                             .append(" times");
                     out.append(SEPARATOR);
@@ -133,12 +131,29 @@ public class DuplicateStringsInspector implements Inspector {
     private void fillFrequencies() {
         Iterator<Instance> iterator = heap.getAllInstancesIterator();
         while (iterator.hasNext()) {
-            String className = iterator.next().getJavaClass().getName();
+            Instance instance = iterator.next();
+            String className = instance.getJavaClass().getName();
             if (className.equals(STRING)) {
-                frequencies.putIfAbsent(className, 0L);
-                frequencies.computeIfPresent(className, (k, v) -> v + 1);
+                PrimitiveArrayInstance byteValue = (PrimitiveArrayInstance) instance.getValueOfField("value");
+                String corresponding = listToString((List<String>) byteValue.getValues());
+                frequencies.putIfAbsent(corresponding, 0L);
+                frequencies.computeIfPresent(corresponding, (k, v) -> v + 1);
             }
         }
+    }
+
+    /**
+     * Converts a given char list to a string.
+     * Made specifically for {@code getValues} method in {@link PrimitiveArrayInstance}.
+     * @param list list of {@link String}s, where each string is a numeric value of some {@code char}.
+     * @return {@link String} representation of the list of chars
+     */
+    private String listToString(List<String> list) {
+        char[] result = new char[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            result[i] = (char) Integer.parseInt(list.get(i));
+        }
+        return new String(result);
     }
 
 }
