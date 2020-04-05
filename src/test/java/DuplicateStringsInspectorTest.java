@@ -2,24 +2,24 @@ import inspector.DuplicateStringsInspector;
 import inspector.InspectionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.*;
-import static org.mockito.AdditionalMatchers.not;
-import static org.mockito.ArgumentMatchers.eq;
-
 import org.netbeans.lib.profiler.heap.Heap;
 import org.netbeans.lib.profiler.heap.Instance;
 import org.netbeans.lib.profiler.heap.JavaClass;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.netbeans.lib.profiler.heap.PrimitiveArrayInstance;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+/**
+ * Tests are specified for current implementation, although might fall on a correct implementation of {@link DuplicateStringsInspector}
+ */
 public class DuplicateStringsInspectorTest {
 
 
@@ -59,34 +59,65 @@ public class DuplicateStringsInspectorTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void emptyHeapGet() {
+    public void emptyHeapGet() throws InspectionException {
         StringWriter writer = new StringWriter();
         Iterator<Instance> iteratorMock = mock(Iterator.class);
         when(iteratorMock.hasNext()).thenReturn(false);
         when(heapMock.getAllInstancesIterator()).thenReturn(iteratorMock);
         DuplicateStringsInspector inspector = new DuplicateStringsInspector(heapMock, writer);
-        assertDoesNotThrow(inspector::inspect);
+        inspector.inspect();
         String expected = SEPARATOR + INSPECTION_HEADER + SEPARATOR + "No significant amounts of duplicates found" + SEPARATOR;
         assertEquals(expected, writer.toString());
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void noStringsHeap() {
+    public void noStringsHeap() throws InspectionException {
         StringWriter writer = new StringWriter();
-        Iterator<Instance> iteratorMock = (Iterator<Instance>) mock(Iterator.class);
+        Iterator<Instance> iteratorMock = mock(Iterator.class);
         Instance instanceMock = mock(Instance.class);
         JavaClass javaClassMock = mock(JavaClass.class);
 
-        when(iteratorMock.hasNext()).thenReturn(true, true, true, false);
+        when(iteratorMock.hasNext()).thenReturn(true, true, true, true, false);
         when(iteratorMock.next()).thenReturn(instanceMock);
         when(instanceMock.getJavaClass()).thenReturn(javaClassMock);
         when(javaClassMock.getName()).thenReturn("not string class");
         when(heapMock.getAllInstancesIterator()).thenReturn(iteratorMock);
 
         DuplicateStringsInspector inspector = new DuplicateStringsInspector(heapMock, writer);
-        assertDoesNotThrow(inspector::inspect);
+        inspector.inspect();
         String expected = SEPARATOR + INSPECTION_HEADER + SEPARATOR + "No significant amounts of duplicates found" + SEPARATOR;
+        assertEquals(expected, writer.toString());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void oneStringOverThreshold() throws InspectionException {
+        String string = "string";
+        List<String> chars = List.of("115", "116", "114", "105", "110", "103");
+        StringWriter writer = new StringWriter();
+        Iterator<Instance> iteratorMock = mock(Iterator.class);
+        Instance stringInstanceMock = mock(Instance.class);
+        Instance noStringInstanceMock = mock(Instance.class);
+        JavaClass stringJavaClassMock = mock(JavaClass.class);
+        JavaClass noStringJavaClassMock = mock(JavaClass.class);
+        PrimitiveArrayInstance arrayInstanceMock = mock(PrimitiveArrayInstance.class);
+
+
+        when(iteratorMock.hasNext()).thenReturn(true, true, true, true, true, true, true, false);
+        when(iteratorMock.next()).thenReturn(stringInstanceMock, stringInstanceMock, noStringInstanceMock, noStringInstanceMock,
+                noStringInstanceMock, stringInstanceMock, stringInstanceMock);
+        when(stringInstanceMock.getJavaClass()).thenReturn(stringJavaClassMock);
+        when(noStringInstanceMock.getJavaClass()).thenReturn(noStringJavaClassMock);
+        when(stringJavaClassMock.getName()).thenReturn("java.lang.String");
+        when(noStringJavaClassMock.getName()).thenReturn("not java.lang.String");
+        when(stringInstanceMock.getValueOfField("value")).thenReturn(arrayInstanceMock);
+        when(arrayInstanceMock.getValues()).thenReturn(chars);
+        when(heapMock.getAllInstancesIterator()).thenReturn(iteratorMock);
+
+        DuplicateStringsInspector inspector = new DuplicateStringsInspector(heapMock, writer, 2);
+        inspector.inspect();
+        String expected = SEPARATOR + INSPECTION_HEADER + SEPARATOR + "\"string\" : 4 times" + SEPARATOR;
         assertEquals(expected, writer.toString());
     }
 
