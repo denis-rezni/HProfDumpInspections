@@ -40,7 +40,7 @@ public class DuplicateStringsInspector implements Inspector {
      * Stores {@link String} frequencies.
      * Entries are of such kind: < String from an instance from heap, it's frequency in the whole heap >.
      */
-    private Map<String, Long> frequencies;
+    private Map<String, Long> frequencies = new HashMap<>();
 
     /**
      * {@link Writer}, to which the inspection message is printed.
@@ -51,38 +51,47 @@ public class DuplicateStringsInspector implements Inspector {
      * Specifies the threshold, from which number of
      * String duplicates becomes significant and is printed to the inspection message.
      */
-    private long threshold = 5;
+    private long threshold = 100;
 
     /**
      * @param heap heap for inspection
+     * @throws NullPointerException in case any of the arguments is null
      */
     @SuppressWarnings("unused")
     public DuplicateStringsInspector(Heap heap) {
         this.heap = Objects.requireNonNull(heap);
         out = new OutputStreamWriter(System.out, StandardCharsets.UTF_8);
-        frequencies = new HashMap<>();
     }
 
     /**
      * @param heap   heap for inspection
      * @param writer inspection message is printed there
+     * @throws NullPointerException in case any of the arguments is null
      */
     public DuplicateStringsInspector(Heap heap, Writer writer) {
         this.heap = Objects.requireNonNull(heap);
-        out = Objects.requireNonNull(writer);
-        frequencies = new HashMap<>();
+        this.out = Objects.requireNonNull(writer);
     }
 
     /**
      * @param heap      heap for inspection
-     * @param out       inspection message is printed there
+     * @param writer    inspection message is printed there
      * @param threshold threshold from which a number of duplicates counts as significant
+     * @throws InspectionException in case threshold is negative
+     * @throws NullPointerException in case any of the arguments is null
      */
     @SuppressWarnings("unused")
-    public DuplicateStringsInspector(Heap heap, Writer out, long threshold) {
-        this.out = out;
-        this.heap = heap;
+    public DuplicateStringsInspector(Heap heap, Writer writer, long threshold) throws InspectionException {
+        checkThreshold(threshold);
+        this.heap = Objects.requireNonNull(heap);
+        this.out = Objects.requireNonNull(writer);
         this.threshold = threshold;
+    }
+
+    private void checkThreshold(long threshold) throws InspectionException {
+        if (threshold < 0) {
+            throw new InspectionException("Non-negative number expected as threshold");
+        }
     }
 
 
@@ -97,6 +106,7 @@ public class DuplicateStringsInspector implements Inspector {
 
     /**
      * Writes a human-readable inspection message using an earlier specified {@link Writer}.
+     *
      * @throws InspectionException if writing fails due to a I/O error.
      */
     private void writeInspection() throws InspectionException {
@@ -145,6 +155,7 @@ public class DuplicateStringsInspector implements Inspector {
     /**
      * Converts a given char list to a string.
      * Made specifically for {@code getValues} method in {@link PrimitiveArrayInstance}.
+     *
      * @param list list of {@link String}s, where each string is a numeric value of some {@code char}.
      * @return {@link String} representation of the list of chars
      */
