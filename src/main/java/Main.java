@@ -9,11 +9,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Main class for HProfDump
+ * Main class for HProfDumpInspections
  * Provides a command-line utility to inspect hprof dumps.
  * @author Denis Reznicheko
  */
 public class Main {
+    private final static String SEPARATOR = System.lineSeparator();
+    private final static String USAGE_MESSAGE = "Usage: java -jar program.jar [-help | path inspection1 [inspection2 ...]]. " +
+            "To get the list of inspections use -help.";
+    private final static String HELP_MESSAGE = "Inspects Hprof dumps. List of inspections:" + SEPARATOR +
+            "-ds : Duplicate Strings inspection. Searches for duplicate strings in the dump." +
+            " Amounts less than threshold (10 by default) are ignored.";
+
     private final static PrintStream OUT = System.out;
     private final static Map<String, Inspection> argToInspection = new HashMap<>();
     static {
@@ -25,11 +32,11 @@ public class Main {
 
     /** Main method for inspecting dumps.
      * Command line utility for inspecting Hprof dumps. <br>
-     * Usage: java -jar HProfDump.jar path inspection [other inspections] <br>
+     * {@value USAGE_MESSAGE} <br>
      * path - full path to the dump file <br>
      * inspections - list of inspections a user wants to see.
      * <uL>
-     *     <li> -ds : duplicate Strings inspector</li>
+     *     <li> -ds : duplicate Strings inspection</li>
      * </uL>
      *
      *
@@ -53,7 +60,9 @@ public class Main {
      */
     private void run(String[] args) throws InspectionException {
         try {
-
+            if (checkUsageOrHelp(args)) {
+                return;
+            }
             parseArgs(args);
             Heap heap = HeapFactory.createHeap(new File(path));
             if (inspections.contains(Inspection.DUPLICATE_STRINGS)) {
@@ -66,8 +75,21 @@ public class Main {
         } catch (IOException e) {
             throw new InspectionException("I/O error when working with HProf file" + e.getMessage(), e);
         } catch (IllegalArgumentException e) {
-            throw new InspectionException("Command line arguments are invalid: " + e.getMessage(), e);
+            throw new InspectionException("Command line arguments are invalid: "
+                    + e.getMessage() + SEPARATOR + USAGE_MESSAGE, e);
         }
+    }
+
+    private boolean checkUsageOrHelp(String[] args) {
+        if (args == null || args.length == 0) {
+            OUT.println(USAGE_MESSAGE);
+            return true;
+        }
+        if (args.length == 1 && args[0] != null && args[0].equals("-help")) {
+            OUT.println(HELP_MESSAGE);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -75,12 +97,12 @@ public class Main {
      * @param args command line arguments
      * @throws IllegalArgumentException if the given args array isn't a valid argument array
      */
-    private void parseArgs(String[] args) throws IllegalArgumentException{
+    private void parseArgs(String[] args) throws IllegalArgumentException, InspectionException {
         if (args == null || args.length < 2) {
-            throw new IllegalArgumentException("Usage: java -jar HProfDump.jar path inspection [other inspections]");
+            throw new InspectionException(USAGE_MESSAGE);
         }
-        if (args[0] == null) {
-            throw new IllegalArgumentException("Non-null path expected as first argument");
+        if (args[0] == null || args[0].isEmpty()) {
+            throw new IllegalArgumentException("Non-null and non-empty path expected as first argument");
         }
         path = args[0];
         for (int i = 1; i < args.length; i++) {
