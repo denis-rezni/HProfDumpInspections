@@ -80,6 +80,11 @@ public class Main {
         }
     }
 
+    /**
+     * Method that check if a user wants a usage method or -help message.
+     * @param args command line arguments
+     * @return {@code true}, if usage or -help messages are intended. {@code false}, otherwise.
+     */
     private boolean checkUsageOrHelp(String[] args) {
         if (args == null || args.length == 0) {
             OUT.println(USAGE_MESSAGE);
