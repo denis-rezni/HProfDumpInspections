@@ -9,9 +9,36 @@
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
-    <groupId>org.reznichenko</groupId>
+    <groupId>reznichenko</groupId>
     <artifactId>HProfDump</artifactId>
     <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <transformers>
+                                <transformer implementation=
+                                                     "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>Main</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 
     <dependencies>
 
@@ -28,8 +55,6 @@
             <version>3.3.3</version>
             <scope>test</scope>
         </dependency>
-
-
 
         <dependency>
             <groupId>org.netbeans.modules</groupId>

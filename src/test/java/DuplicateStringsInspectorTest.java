@@ -93,8 +93,7 @@ public class DuplicateStringsInspectorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void oneStringOverThreshold() throws InspectionException {
-        String string = "string";
-        List<String> chars = List.of("115", "116", "114", "105", "110", "103");
+        List<String> chars = List.of("115", "116", "114", "105", "110", "103");//"string"
         StringWriter writer = new StringWriter();
         Iterator<Instance> iteratorMock = mock(Iterator.class);
         Instance stringInstanceMock = mock(Instance.class);
