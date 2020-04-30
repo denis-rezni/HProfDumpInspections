@@ -17,7 +17,7 @@ public class Main {
     private final static String SEPARATOR = System.lineSeparator();
     private final static String USAGE_MESSAGE = "Usage: java -jar program.jar [-help | path inspection1 [inspection2 ...]]. " +
             "To get the list of inspections use -help.";
-    private final static String HELP_MESSAGE = "Inspects Hprof dumps. List of inspections:" + SEPARATOR +
+    private final static String HELP_MESSAGE = "Inspects Hprof dumps. Prints inspection message to standard output. List of inspections:" + SEPARATOR +
             "-ds : Duplicate Strings inspection. Searches for duplicate strings in the dump." +
             " Amounts less than threshold (10 by default) are ignored.";
 
