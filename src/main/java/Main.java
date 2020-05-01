@@ -48,7 +48,6 @@ public class Main {
      * <li> -sr : self-referencing objects inspection</li>
      * </uL>
      * <p>
-     * <p>
      * Inspection is written to the {@code OUT} {@link PrintStream} (System.out by default).
      * In case of any exception writes the exception message to the {@code OUT} {@link PrintStream}.
      *
