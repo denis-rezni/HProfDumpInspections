@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Main class for HProfDumpInspections
  * Provides a command-line utility to inspect hprof dumps.
- * @author Denis Reznicheko
+ * @author Denis Reznichenko
  */
 public class Main {
     private final static String SEPARATOR = System.lineSeparator();
