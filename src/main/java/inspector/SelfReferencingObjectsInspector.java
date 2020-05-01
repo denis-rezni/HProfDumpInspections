@@ -1,10 +1,8 @@
 package inspector;
 
-import org.netbeans.lib.profiler.heap.Field;
-import org.netbeans.lib.profiler.heap.FieldValue;
-import org.netbeans.lib.profiler.heap.Heap;
-import org.netbeans.lib.profiler.heap.Instance;
+import org.netbeans.lib.profiler.heap.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -35,6 +33,7 @@ public class SelfReferencingObjectsInspector extends Inspector {
 
     /**
      * Sets a value, amounts of self referencing objects over which are considered significant.
+     *
      * @param threshold value to be set
      * @throws InspectionException if parameter is negative
      */
@@ -47,6 +46,7 @@ public class SelfReferencingObjectsInspector extends Inspector {
     /**
      * Creates an instance of {@link SelfReferencingObjectsInspector}.
      * Results are printed to standard output, threshold is 1 by default.
+     *
      * @param heap {@link Heap} to be inspected.
      * @throws NullPointerException if any of the arguments is null
      */
@@ -59,6 +59,7 @@ public class SelfReferencingObjectsInspector extends Inspector {
     /**
      * Creates an instance of {@link SelfReferencingObjectsInspector}.
      * Results are printed to the specified {@link Writer}, threshold is 1 by default.
+     *
      * @param heap {@link Heap} to be inspected
      * @throws NullPointerException if any of the arguments is null
      */
@@ -71,8 +72,9 @@ public class SelfReferencingObjectsInspector extends Inspector {
     /**
      * Creates an instance of {@link SelfReferencingObjectsInspector}.
      * Results are printed to the specified {@link Writer}, threshold is also specified.
+     *
      * @param heap {@link Heap} to be inspected
-     * @throws InspectionException if threshold value is negative
+     * @throws InspectionException  if threshold value is negative
      * @throws NullPointerException if any of the arguments is null
      */
     @SuppressWarnings("unused")
@@ -91,12 +93,8 @@ public class SelfReferencingObjectsInspector extends Inspector {
 
     @Override
     public void inspect() throws InspectionException {
-        try (out) {
-            fillMap();
-            writeInspection();
-        } catch (IOException e) {
-            throw new InspectionException("IO error when closing writer: " + e.getMessage(), e);
-        }
+        fillMap();
+        writeInspection();
     }
 
     private void writeInspection() throws InspectionException {

@@ -77,7 +77,7 @@ public class DuplicateStringsInspector extends Inspector {
      * @param heap      heap for inspection
      * @param writer    inspection message is printed there
      * @param threshold threshold from which a number of duplicates counts as significant
-     * @throws InspectionException if threshold is negative
+     * @throws InspectionException  if threshold is negative
      * @throws NullPointerException if any of the arguments is null
      */
     @SuppressWarnings("unused")
@@ -90,6 +90,7 @@ public class DuplicateStringsInspector extends Inspector {
 
     /**
      * Sets {@code threshold} field.
+     *
      * @param threshold value to be set
      * @throws InspectionException if parameter is negative
      */
@@ -107,12 +108,8 @@ public class DuplicateStringsInspector extends Inspector {
 
 
     public void inspect() throws InspectionException {
-        try (out) {
-            fillFrequencies();
-            writeInspection();
-        } catch (IOException e) {
-            throw new InspectionException("IO error when closing writer: " + e.getMessage(), e);
-        }
+        fillFrequencies();
+        writeInspection();
     }
 
     /**

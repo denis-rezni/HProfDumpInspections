@@ -1,5 +1,6 @@
 import inspector.DuplicateStringsInspector;
 import inspector.InspectionException;
+import inspector.SelfReferencingObjectsInspector;
 import org.netbeans.lib.profiler.heap.Heap;
 import org.netbeans.lib.profiler.heap.HeapFactory;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 /**
  * Main class for HProfDumpInspections
  * Provides a command-line utility to inspect hprof dumps.
+ *
  * @author Denis Reznichenko
  */
 public class Main {
@@ -23,7 +25,9 @@ public class Main {
             "-sr : Self Referencing Objects inspection. Finds all self referencing objects in the dump.";
 
     private final static PrintStream OUT = System.out;
+    private final static Writer OUT_WRITER = new PrintWriter(OUT);
     private final static Map<String, Inspection> argToInspection = new HashMap<>();
+
     static {
         argToInspection.put("-ds", Inspection.DUPLICATE_STRINGS);
         argToInspection.put("-sr", Inspection.SELF_REFERENCING_OBJECTS);
@@ -32,18 +36,22 @@ public class Main {
     private static final EnumSet<Inspection> inspections = EnumSet.noneOf(Inspection.class);
     private static String path;
 
-    /** Main method for inspecting dumps.
+    /**
+     * Main method for inspecting dumps.
      * Command line utility for inspecting Hprof dumps. <br>
+     * Finds memory misuses in a specified dump.
      * {@value USAGE_MESSAGE} <br>
      * path - full path to the dump file <br>
      * inspections - list of inspections a user wants to see.
      * <uL>
-     *     <li> -ds : duplicate Strings inspection</li>
+     * <li> -ds : duplicate Strings inspection</li>
+     * <li> -sr : self-referencing objects inspection</li>
      * </uL>
-     *
-     *
+     * <p>
+     * <p>
      * Inspection is written to the {@code OUT} {@link PrintStream} (System.out by default).
      * In case of any exception writes the exception message to the {@code OUT} {@link PrintStream}.
+     *
      * @param args command line arguments
      */
     public static void main(String[] args) {
@@ -57,6 +65,7 @@ public class Main {
 
     /**
      * Runs the command line utility. A non-static main method.
+     *
      * @param args command line args
      * @throws InspectionException if the inspection fails
      */
@@ -67,10 +76,17 @@ public class Main {
             }
             parseArgs(args);
             Heap heap = HeapFactory.createHeap(new File(path));
-            if (inspections.contains(Inspection.DUPLICATE_STRINGS)) {
-                DuplicateStringsInspector duplicateStringsInspector
-                        = new DuplicateStringsInspector(heap, new PrintWriter(OUT), 10L);
-                duplicateStringsInspector.inspect();
+            try (OUT_WRITER) {
+                if (inspections.contains(Inspection.DUPLICATE_STRINGS)) {
+                    DuplicateStringsInspector duplicateStringsInspector
+                            = new DuplicateStringsInspector(heap, OUT_WRITER, 10L);
+                    duplicateStringsInspector.inspect();
+                }
+                if (inspections.contains(Inspection.SELF_REFERENCING_OBJECTS)) {
+                    SelfReferencingObjectsInspector selfReferencingObjectsInspector
+                            = new SelfReferencingObjectsInspector(heap, OUT_WRITER);
+                    selfReferencingObjectsInspector.inspect();
+                }
             }
         } catch (FileNotFoundException e) {
             throw new InspectionException("HProf file not found: " + e.getMessage(), e);
@@ -84,6 +100,7 @@ public class Main {
 
     /**
      * Method that check if a user wants a usage method or -help message.
+     *
      * @param args command line arguments
      * @return {@code true}, if usage or -help messages are intended. {@code false}, otherwise.
      */
@@ -101,6 +118,7 @@ public class Main {
 
     /**
      * Parses the given args array.
+     *
      * @param args command line arguments
      * @throws IllegalArgumentException if the given args array isn't a valid argument array
      */
