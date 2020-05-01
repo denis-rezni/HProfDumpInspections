@@ -12,14 +12,14 @@ import java.util.*;
 
 
 /**
- * Inspector, which finds all duplicate {@link String}s in a given heap.
+ * Inspector, which finds all duplicate {@link String}s in a given {@link Heap}.
  * Human-readable inspection message is written to a given {@link Writer}.
  * If the {@link Writer} isn't specified, writes to System.out.
  *
  * @author Denis Reznichenko
  */
 @SuppressWarnings("unchecked")
-public class DuplicateStringsInspector implements Inspector {
+public class DuplicateStringsInspector extends Inspector {
 
     /**
      * Represents a class name for class {@link String}.
@@ -55,7 +55,7 @@ public class DuplicateStringsInspector implements Inspector {
 
     /**
      * @param heap heap for inspection
-     * @throws NullPointerException in case any of the arguments is null
+     * @throws NullPointerException if any of the arguments is null
      */
     @SuppressWarnings("unused")
     public DuplicateStringsInspector(Heap heap) {
@@ -66,7 +66,7 @@ public class DuplicateStringsInspector implements Inspector {
     /**
      * @param heap   heap for inspection
      * @param writer inspection message is printed there
-     * @throws NullPointerException in case any of the arguments is null
+     * @throws NullPointerException if any of the arguments is null
      */
     public DuplicateStringsInspector(Heap heap, Writer writer) {
         this.heap = Objects.requireNonNull(heap);
@@ -77,8 +77,8 @@ public class DuplicateStringsInspector implements Inspector {
      * @param heap      heap for inspection
      * @param writer    inspection message is printed there
      * @param threshold threshold from which a number of duplicates counts as significant
-     * @throws InspectionException in case threshold is negative
-     * @throws NullPointerException in case any of the arguments is null
+     * @throws InspectionException if threshold is negative
+     * @throws NullPointerException if any of the arguments is null
      */
     @SuppressWarnings("unused")
     public DuplicateStringsInspector(Heap heap, Writer writer, long threshold) throws InspectionException {
@@ -91,7 +91,7 @@ public class DuplicateStringsInspector implements Inspector {
     /**
      * Sets {@code threshold} field.
      * @param threshold value to be set
-     * @throws InspectionException in case parameter is negative
+     * @throws InspectionException if parameter is negative
      */
     @SuppressWarnings("unused")
     public void setThreshold(long threshold) throws InspectionException {
@@ -122,9 +122,7 @@ public class DuplicateStringsInspector implements Inspector {
      */
     private void writeInspection() throws InspectionException {
         try {
-            out.append(SEPARATOR)
-                    .append("DuplicateStringInspector inspection")
-                    .append(SEPARATOR);
+            out.append(getInspectionHeader("DuplicateStringInspector"));
             boolean hasDuplicates = false;
             for (Map.Entry<String, Long> entry : frequencies.entrySet()) {
                 if (entry.getValue() >= threshold) {
@@ -141,7 +139,7 @@ public class DuplicateStringsInspector implements Inspector {
                 out.append("No significant amounts of duplicates found").append(SEPARATOR);
             }
         } catch (IOException e) {
-            throw new InspectionException("I/O exception occurred while writing the inspection message: " + e.getMessage(), e);
+            throw new InspectionException("I/O exception occurred while writing the DuplicateStringInspector inspection message: " + e.getMessage(), e);
         }
 
     }

@@ -18,13 +18,15 @@ public class Main {
     private final static String USAGE_MESSAGE = "Usage: java -jar program.jar [-help | path inspection1 [inspection2 ...]]. " +
             "To get the list of inspections use -help.";
     private final static String HELP_MESSAGE = "Inspects Hprof dumps. Prints inspection message to standard output. List of inspections:" + SEPARATOR +
-            "-ds : Duplicate Strings inspection. Searches for duplicate strings in the dump." +
-            " Amounts less than threshold (10 by default) are ignored.";
+            "-ds : Duplicate Strings inspection. Finds duplicate strings in the dump." +
+            " Amounts less than threshold (10 by default) are ignored." + SEPARATOR +
+            "-sr : Self Referencing Objects inspection. Finds all self referencing objects in the dump.";
 
     private final static PrintStream OUT = System.out;
     private final static Map<String, Inspection> argToInspection = new HashMap<>();
     static {
         argToInspection.put("-ds", Inspection.DUPLICATE_STRINGS);
+        argToInspection.put("-sr", Inspection.SELF_REFERENCING_OBJECTS);
     }
 
     private static final EnumSet<Inspection> inspections = EnumSet.noneOf(Inspection.class);
@@ -129,6 +131,6 @@ public class Main {
      * Class enumerating inspections.
      */
     private enum Inspection {
-        DUPLICATE_STRINGS
+        DUPLICATE_STRINGS, SELF_REFERENCING_OBJECTS
     }
 }
