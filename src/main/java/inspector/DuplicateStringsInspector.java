@@ -34,13 +34,13 @@ public class DuplicateStringsInspector implements Inspector {
     /**
      * Heap, which is being inspected
      */
-    private Heap heap;
+    private final Heap heap;
 
     /**
      * Stores {@link String} frequencies.
      * Entries are of such kind: < String from an instance from heap, it's frequency in the whole heap >.
      */
-    private Map<String, Long> frequencies = new HashMap<>();
+    private final Map<String, Long> frequencies = new HashMap<>();
 
     /**
      * {@link Writer}, to which the inspection message is printed.
@@ -93,7 +93,7 @@ public class DuplicateStringsInspector implements Inspector {
      * @param threshold value to be set
      * @throws InspectionException in case parameter is negative
      */
-
+    @SuppressWarnings("unused")
     public void setThreshold(long threshold) throws InspectionException {
         checkThreshold(threshold);
         this.threshold = threshold;
